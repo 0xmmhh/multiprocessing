@@ -1,6 +1,6 @@
 from PIL import Image, ImageChops, ImageFilter
-im_x = "Zrzut ekranu 2023-01-22 003124.png"
-im_y = "Zrzut ekranu 2023-03-13 193554.png"
+im_x = "img2.png"
+im_y = "img3.png"
 y = Image.open(im_y)
 x = Image.open(im_x)
 # x.show()
