@@ -82,8 +82,6 @@ if __name__ == '__main__':
     output_parallel_path = "output_sepia_parallel.jpg"
     output_single_path = "output_sepia_single.jpg"
 
-    # Run parallel processing
     apply_sepia_parallel(input_path, output_parallel_path)
 
-    # Run single process
     apply_sepia_single(input_path, output_single_path)
