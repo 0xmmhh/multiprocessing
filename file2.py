@@ -108,9 +108,13 @@ class SepiaApp:
                                          command=self.apply_sepia_parallel)
         self.parallel_button.grid(row=0, column=1, padx=10)
 
+        self.plot_button = tk.Button(self.button_frame, text="Create plot", font=("Arial", 12),
+                                     command=self.plot_performance)
+        self.plot_button.grid(row=0, column=2, padx=10)
+
         self.single_button = tk.Button(self.button_frame, text="Apply Sepia (Single)", font=("Arial", 12),
                                        command=self.apply_sepia_single)
-        self.single_button.grid(row=0, column=2, padx=10)
+        self.single_button.grid(row=0, column=3, padx=10)
 
 
         self.time_label = tk.Label(root, text="", font=("Arial", 12), bg="white")
@@ -169,13 +173,7 @@ class SepiaApp:
     def plot_performance(self):
         process_counts = [1,2,3,4,5,6,7,8,16]
         execution_times = []
-        for counts in process_counts:
-            if counts == 1:
-                execution_times.append(apply_sepia_single('DSC03582.jpg', 'output_sepia_single.jpg'))
-            elif counts > 1:
-                execution_times.append(apply_sepia_parallel('DSC03582.jpg', 'output_sepia_parallel.jpg', counts))
-
-
+  
         plt.figure(figsize=(10, 5))
         plt.plot(process_counts, execution_times, marker='o', linestyle='-', color='b')
         plt.title("Execution Time vs Number of Processes")
@@ -190,4 +188,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SepiaApp(root)
     root.mainloop()
-#test
