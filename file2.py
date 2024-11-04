@@ -171,9 +171,16 @@ class SepiaApp:
         self.time_label.config(text=f"Processing Time: {processing_time:.2f} seconds")
 
     def plot_performance(self):
-        process_counts = [1,2,3,4,5,6,7,8,16]
+        if not self.image_path:
+            messagebox.showwarning("Warning", "Please upload an image first.")
+            return
+        process_counts = [1,2,4,6,8,16]
         execution_times = []
-  
+        for counts in process_counts:
+            if counts == 1:
+                execution_times.append(apply_sepia_single(self.image_path, 'output_sepia_single.jpg'))
+            elif counts > 1:
+                execution_times.append(apply_sepia_parallel(self.image_path, 'output_sepia_parallel.jpg', counts))
         plt.figure(figsize=(10, 5))
         plt.plot(process_counts, execution_times, marker='o', linestyle='-', color='b')
         plt.title("Execution Time vs Number of Processes")
