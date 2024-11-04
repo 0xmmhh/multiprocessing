@@ -5,6 +5,7 @@ import multiprocessing as mp
 import numpy as np
 import time
 
+
 def apply_sepia(img_array):
     sepia_matrix = np.array([
         [0.393, 0.769, 0.189],
@@ -14,6 +15,7 @@ def apply_sepia(img_array):
     sepia_img = img_array.dot(sepia_matrix.T)
     np.putmask(sepia_img, sepia_img > 255, 255)
     return sepia_img.astype(np.uint8)
+
 
 def split_image(image, parts):
     img_array = np.array(image)
@@ -28,9 +30,11 @@ def split_image(image, parts):
 
     return image_parts
 
+
 def process_image_part(args):
     idx, img_part = args
     return idx, apply_sepia(img_part)
+
 
 def merge_parts(parts, shape):
     merged_image = np.zeros(shape, dtype=np.uint8)
@@ -43,7 +47,8 @@ def merge_parts(parts, shape):
 
     return Image.fromarray(merged_image)
 
-def apply_sepia_parallel(image_path, output_path, num_processes=8):
+
+def apply_sepia_parallel(image_path, output_path, num_processes=1):
     start_time = time.time()
     image = Image.open(image_path).convert('RGB')
     image_parts = split_image(image, num_processes)
@@ -55,6 +60,7 @@ def apply_sepia_parallel(image_path, output_path, num_processes=8):
     result_image.save(output_path)
     return time.time() - start_time
 
+
 def apply_sepia_single(image_path, output_path):
     start_time = time.time()
     image = Image.open(image_path).convert('RGB')
@@ -64,6 +70,7 @@ def apply_sepia_single(image_path, output_path):
     result_image = Image.fromarray(sepia_image)
     result_image.save(output_path)
     return time.time() - start_time
+
 
 class SepiaApp:
     def __init__(self, root):
@@ -93,13 +100,16 @@ class SepiaApp:
         self.button_frame = tk.Frame(root, bg="white")
         self.button_frame.place(relx=0.5, rely=0.85, anchor="center")
 
-        self.upload_button = tk.Button(self.button_frame, text="Upload Image", font=("Arial", 12), command=self.upload_image)
+        self.upload_button = tk.Button(self.button_frame, text="Upload Image", font=("Arial", 12),
+                                       command=self.upload_image)
         self.upload_button.grid(row=0, column=0, padx=10)
 
-        self.parallel_button = tk.Button(self.button_frame, text="Apply Sepia (Parallel)", font=("Arial", 12), command=self.apply_sepia_parallel)
+        self.parallel_button = tk.Button(self.button_frame, text="Apply Sepia (Parallel)", font=("Arial", 12),
+                                         command=self.apply_sepia_parallel)
         self.parallel_button.grid(row=0, column=1, padx=10)
 
-        self.single_button = tk.Button(self.button_frame, text="Apply Sepia (Single)", font=("Arial", 12), command=self.apply_sepia_single)
+        self.single_button = tk.Button(self.button_frame, text="Apply Sepia (Single)", font=("Arial", 12),
+                                       command=self.apply_sepia_single)
         self.single_button.grid(row=0, column=2, padx=10)
 
         # Time Label
@@ -154,6 +164,7 @@ class SepiaApp:
         self.processed_image = ImageTk.PhotoImage(img_resized)
         self.processed_image_label.config(image=self.processed_image)
         self.time_label.config(text=f"Processing Time: {processing_time:.2f} seconds")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
