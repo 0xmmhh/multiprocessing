@@ -49,11 +49,10 @@ def merge_parts(parts, shape):
     return Image.fromarray(merged_image)
 
 
-def apply_sepia_parallel(image_path, output_path, num_processes=8):
+def apply_sepia_parallel(image_path, output_path, num_processes=3):
     start_time = time.time()
     image = Image.open(image_path).convert('RGB')
     image_parts = split_image(image, num_processes)
-
     with mp.Pool(processes=num_processes) as pool:
         processed_parts = pool.map(process_image_part, image_parts)
 

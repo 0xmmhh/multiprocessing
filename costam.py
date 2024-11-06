@@ -78,7 +78,7 @@ def apply_sepia_single(image_path, output_path):
 
 
 if __name__ == '__main__':
-    input_path = "img4.jpg"
+    input_path = "34MB.JPG"
     output_parallel_path = "output_sepia_parallel.jpg"
     output_single_path = "output_sepia_single.jpg"
 
