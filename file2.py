@@ -5,7 +5,7 @@ import multiprocessing as mp
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-
+Image.MAX_IMAGE_PIXELS = 1000000000000
 
 def apply_sepia(img_array):
     sepia_matrix = np.array([
@@ -49,16 +49,27 @@ def merge_parts(parts, shape):
     return Image.fromarray(merged_image)
 
 
-def apply_sepia_parallel(image_path, output_path, num_processes=3):
+def apply_sepia_parallel(image_path, output_path, num_processes=4):
     start_time = time.time()
     image = Image.open(image_path).convert('RGB')
     image_parts = split_image(image, num_processes)
+    # start_time = time.time()
     with mp.Pool(processes=num_processes) as pool:
         processed_parts = pool.map(process_image_part, image_parts)
-
+    # return time.time() - start_time
     result_image = merge_parts(processed_parts, np.array(image).shape)
     result_image.save(output_path)
     return time.time() - start_time
+
+def apply_sepia_parallel_barebone(image_path, output_path, num_processes=4):
+
+    image = Image.open(image_path).convert('RGB')
+    image_parts = split_image(image, num_processes)
+    start_time = time.time()
+    with mp.Pool(processes=num_processes) as pool:
+        processed_parts = pool.map(process_image_part, image_parts)
+    return time.time() - start_time
+
 
 
 def apply_sepia_single(image_path, output_path):
@@ -83,18 +94,15 @@ class SepiaApp:
         self.preview_frame = tk.Frame(root, bg="white")
         self.preview_frame.place(relx=0.5, rely=0.4, anchor="center")
 
-
         self.original_label = tk.Label(self.preview_frame, text="Original Image", font=("Arial", 14), bg="white")
         self.original_label.grid(row=0, column=0, padx=10, pady=5)
         self.original_image_label = tk.Label(self.preview_frame, width=375, height=300, bg="lightgrey", relief="solid")
         self.original_image_label.grid(row=1, column=0, padx=10, pady=10)
 
-
         self.processed_label = tk.Label(self.preview_frame, text="Processed Image", font=("Arial", 14), bg="white")
         self.processed_label.grid(row=0, column=1, padx=10, pady=5)
         self.processed_image_label = tk.Label(self.preview_frame, width=375, height=300, bg="lightgrey", relief="solid")
         self.processed_image_label.grid(row=1, column=1, padx=10, pady=10)
-
 
         self.button_frame = tk.Frame(root, bg="white")
         self.button_frame.place(relx=0.5, rely=0.85, anchor="center")
@@ -111,16 +119,19 @@ class SepiaApp:
                                      command=self.plot_performance)
         self.plot_button.grid(row=0, column=2, padx=10)
 
+        self.plot_button = tk.Button(self.button_frame, text="Create plot (barebone)", font=("Arial", 12),
+                                     command=self.plot_performance)
+        self.plot_button.grid(row=0, column=3, padx=10)
+
         self.single_button = tk.Button(self.button_frame, text="Apply Sepia (Single)", font=("Arial", 12),
                                        command=self.apply_sepia_single)
-        self.single_button.grid(row=0, column=3, padx=10)
-
+        self.single_button.grid(row=0, column=4, padx=10)
 
         self.time_label = tk.Label(root, text="", font=("Arial", 12), bg="white")
         self.time_label.place(relx=0.5, rely=0.95, anchor="center")
 
     def upload_image(self):
-        self.image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png")])
+        self.image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png *.cmyk")])
         if self.image_path:
             img = Image.open(self.image_path)
             img_resized = self.resize_image(img, 375, 300)
@@ -152,7 +163,6 @@ class SepiaApp:
         processing_time = apply_sepia_parallel(self.image_path, output_path)
         self.show_processed_image(output_path, processing_time)
 
-
     def apply_sepia_single(self):
         if not self.image_path:
             messagebox.showwarning("Warning", "Please upload an image first.")
@@ -173,7 +183,27 @@ class SepiaApp:
         if not self.image_path:
             messagebox.showwarning("Warning", "Please upload an image first.")
             return
-        process_counts = [1,2,4,6,8,16]
+        process_counts = [1, 2, 4, 6, 8, 16]
+        execution_times = []
+        for counts in process_counts:
+            if counts == 1:
+                execution_times.append(apply_sepia_single(self.image_path, 'output_sepia_single.jpg'))
+            elif counts > 1:
+                execution_times.append(apply_sepia_parallel(self.image_path, 'output_sepia_parallel.jpg', counts))
+        plt.figure(figsize=(10, 5))
+        plt.plot(process_counts, execution_times, marker='o', linestyle='-', color='b')
+        plt.title("Execution Time vs Number of Processes")
+        plt.xlabel("Number of Processes")
+        plt.ylabel("Execution Time (seconds)")
+        plt.xticks(process_counts)
+        plt.grid()
+        plt.show()
+
+    def plot_performance_barebone(self):
+        if not self.image_path:
+            messagebox.showwarning("Warning", "Please upload an image first.")
+            return
+        process_counts = [1, 2, 4, 6, 8, 16]
         execution_times = []
         for counts in process_counts:
             if counts == 1:
@@ -194,3 +224,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SepiaApp(root)
     root.mainloop()
+    print(apply_sepia_parallel('image100.jpg', 'output_sepia_parallel.jpg', 4))
+    print(apply_sepia_single('image100.jpg', 'output_sepia_single.jpg'))
