@@ -5,7 +5,10 @@ import multiprocessing as mp
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-Image.MAX_IMAGE_PIXELS = 1000000000000 #zabezpieczenie by błąd nie wywalał
+
+Image.MAX_IMAGE_PIXELS = 1000000000000  #zabezpieczenie by błąd nie wywalał
+
+
 #macierz sepii
 def apply_sepia(img_array):
     sepia_matrix = np.array([
@@ -16,6 +19,7 @@ def apply_sepia(img_array):
     sepia_img = img_array.dot(sepia_matrix.T)
     np.putmask(sepia_img, sepia_img > 255, 255)
     return sepia_img.astype(np.uint8)
+
 
 #dziel obraz
 def split_image(image, parts):
@@ -36,6 +40,7 @@ def process_image_part(args):
     idx, img_part = args
     return idx, apply_sepia(img_part)
 
+
 #łączenie części
 def merge_parts(parts, shape):
     merged_image = np.zeros(shape, dtype=np.uint8)
@@ -47,6 +52,7 @@ def merge_parts(parts, shape):
         merged_image[start_row:start_row + part.shape[0]] = part
 
     return Image.fromarray(merged_image)
+
 
 #sepia współbierznie czas całość
 def apply_sepia_parallel(image_path, output_path, num_processes=4):
@@ -60,9 +66,10 @@ def apply_sepia_parallel(image_path, output_path, num_processes=4):
     result_image = merge_parts(processed_parts, np.array(image).shape)
     result_image.save(output_path)
     return time.time() - start_time
+
+
 #sepia współbierznie czas tylko multiprocessingu
 def apply_sepia_parallel_barebone(image_path, output_path, num_processes=4):
-
     image = Image.open(image_path).convert('RGB')
     image_parts = split_image(image, num_processes)
     start_time = time.time()
@@ -81,6 +88,7 @@ def apply_sepia_single(image_path, output_path):
     result_image = Image.fromarray(sepia_image)
     result_image.save(output_path)
     return time.time() - start_time
+
 
 #GUI
 class SepiaApp:
@@ -139,6 +147,7 @@ class SepiaApp:
             self.original_image_label.config(image=self.original_image)
             self.processed_image_label.config(image='')
             self.time_label.config(text="")
+
     # to do gui ale nie działa więc nie potrzebne
     def resize_image(self, img, max_width, max_height):
 
@@ -153,6 +162,7 @@ class SepiaApp:
             new_width = int(max_height * img_ratio)
 
         return img.resize((new_width, new_height), Image.LANCZOS)
+
     #konwertuj na sepie dla współbierznego
     def apply_sepia_parallel(self):
         if not self.image_path:
@@ -162,6 +172,7 @@ class SepiaApp:
         output_path = "output_sepia_parallel.jpg"
         processing_time = apply_sepia_parallel(self.image_path, output_path)
         self.show_processed_image(output_path, processing_time)
+
     #konwertuj na sepie dla pojedynczego procesu
     def apply_sepia_single(self):
         if not self.image_path:
@@ -171,6 +182,7 @@ class SepiaApp:
         output_path = "output_sepia_single.jpg"
         processing_time = apply_sepia_single(self.image_path, output_path)
         self.show_processed_image(output_path, processing_time)
+
     #pokaż obraz
     def show_processed_image(self, output_path, processing_time):
         img = Image.open(output_path)
@@ -178,6 +190,7 @@ class SepiaApp:
         self.processed_image = ImageTk.PhotoImage(img_resized)
         self.processed_image_label.config(image=self.processed_image)
         self.time_label.config(text=f"Processing Time: {processing_time:.2f} seconds")
+
     #plot wykres całości
     def plot_performance(self):
         if not self.image_path:
@@ -198,7 +211,9 @@ class SepiaApp:
         plt.xticks(process_counts)
         plt.grid()
         plt.show()
+
     #plot wykres bez dzielenia i łączenia
+
     def plot_performance_barebone(self):
         if not self.image_path:
             messagebox.showwarning("Warning", "Please upload an image first.")
@@ -219,10 +234,9 @@ class SepiaApp:
         plt.grid()
         plt.show()
 
+
 #Start programu
 if __name__ == "__main__":
     root = tk.Tk()
     app = SepiaApp(root)
     root.mainloop()
-    print(apply_sepia_parallel('image100.jpg', 'output_sepia_parallel.jpg', 4))
-    print(apply_sepia_single('image100.jpg', 'output_sepia_single.jpg'))
